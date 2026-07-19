@@ -1,0 +1,19 @@
+# Run checks and test suite.
+#
+# Usage:
+# ```
+# jobs:
+#   checks:
+#     uses: ./.github/workflows/_checks.yaml
+# ```
+name: Checks
+
+on:
+  workflow_call:
+
+jobs:
+  pre_commit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/prek
