@@ -47,7 +47,7 @@ build-backend = "uv_build"
 exclude-newer = "7 days"
 
 [tool.uv.build-backend]
-module-name = ["django-sqlite-strict"]
+module-name = ["django_sqlite_strict"]
 module-root = "src"
 
 [tool.pytest]
