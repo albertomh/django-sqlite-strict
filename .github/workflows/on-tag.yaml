@@ -1,0 +1,25 @@
+# On Tag pipeline
+# Runs when a semver tag is pushed up to GitHub.
+
+name: on-tag
+
+on:
+  push:
+    # run this workflow only if the tag matches the format 'M.m.p' (semver)
+    tags:
+      - '*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment:
+      name: testpypi
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/publish
+        with:
+          uv_publish_url: https://test.pypi.org/legacy/

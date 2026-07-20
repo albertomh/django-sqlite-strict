@@ -14,8 +14,6 @@ classifiers = [
     "Development Status :: 1 - Planning",
     "Framework :: Django :: 5.2",
     "Framework :: Django :: 6.0",
-    "Framework :: Django :: 6.1",
-    "Framework :: Django :: 6.2",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Operating System :: OS Independent",
