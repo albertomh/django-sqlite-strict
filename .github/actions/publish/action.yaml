@@ -21,13 +21,14 @@
 #         contents: read
 #
 #       steps:
+#         - uses: actions/checkout@vM
 #         - uses: ./.github/actions/publish
 #   ```
 #
 # Optionally specify a publish URL (specially for TestPyPI):
 #   ```yaml
-#   with:
-#     uv_publish_url: https://test.pypi.org/legacy/
+#           with:
+#             uv_publish_url: https://test.pypi.org/legacy/
 #   ```
 
 name: "publish"
