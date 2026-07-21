@@ -47,6 +47,9 @@ runs:
 
     - name: Install uv
       uses: astral-sh/setup-uv@v8.3.2
+      with:
+        version: "0.11.29"
+        enable-cache: true
 
     - name: Install the Python version specified by pyproject.toml
       shell: bash
