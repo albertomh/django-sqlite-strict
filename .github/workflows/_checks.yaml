@@ -18,11 +18,27 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/prek
 
+  generate_matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      session: ${{ steps.set-matrix.outputs.session }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "0.11.29"
+      - uses: wntrblm/nox@main
+      - id: set-matrix
+        run: echo "session=$(uvx nox --json -l -s test | jq -c '[.[].session]')" >> "$GITHUB_OUTPUT"
+
   test:
     needs:
       - pre_commit
+      - generate_matrix
     strategy:
       fail-fast: false
+      matrix:
+        session: ${{ fromJSON(needs.generate_matrix.outputs.session) }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -30,5 +46,5 @@ jobs:
         with:
           version: "0.11.29"
           enable-cache: true
-      - run: uv sync --all-groups
-      - run: uv run pytest
+      - uses: wntrblm/nox@main
+      - run: nox -s "${{ matrix.session }}"
