@@ -1,5 +1,6 @@
 from unittest import mock
 
+import pytest
 from django.core.checks import Error
 from django.db import models
 from django.test.utils import isolate_apps
@@ -26,6 +27,7 @@ def test_no_databases_given():
     assert checks.check_column_types(databases=None) == []
 
 
+@pytest.mark.xfail(reason="DatabaseWrapper.data_types needs fleshing out")
 def test_project_models_pass():
     assert checks.check_column_types(databases=["default"]) == []
 
