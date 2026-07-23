@@ -8,6 +8,8 @@ Usage:
 ```
 """
 
+from typing import ClassVar
+
 from django.core.exceptions import ImproperlyConfigured
 from django.db.backends.sqlite3 import base, schema
 
@@ -21,3 +23,11 @@ if base.Database.sqlite_version_info < (3, 37, 0):
 
 class DatabaseSchemaEditor(schema.DatabaseSchemaEditor):
     sql_create_table = "CREATE TABLE %(table)s (%(definition)s) STRICT"
+
+
+class DatabaseWrapper(base.DatabaseWrapper):
+    SchemaEditorClass = DatabaseSchemaEditor
+
+    data_types: ClassVar = {
+        **base.DatabaseWrapper.data_types,
+    }
