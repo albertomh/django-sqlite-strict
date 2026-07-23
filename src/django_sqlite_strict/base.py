@@ -9,7 +9,7 @@ Usage:
 """
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db.backends.sqlite3 import base
+from django.db.backends.sqlite3 import base, schema
 
 if base.Database.sqlite_version_info < (3, 37, 0):
     message = (
@@ -17,3 +17,7 @@ if base.Database.sqlite_version_info < (3, 37, 0):
         f"(found {base.Database.sqlite_version})."
     )
     raise ImproperlyConfigured(message)
+
+
+class DatabaseSchemaEditor(schema.DatabaseSchemaEditor):
+    sql_create_table = "CREATE TABLE %(table)s (%(definition)s) STRICT"
