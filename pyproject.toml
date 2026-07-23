@@ -55,7 +55,12 @@ module-name = ["django_sqlite_strict"]
 module-root = "src"
 
 [tool.pytest]
-addopts = ["--strict-markers", "--pdbcls=IPython.terminal.debugger:TerminalPdb"]
+pythonpath = ["."]
+addopts = [
+    "--strict-markers",
+    "--pdbcls=IPython.terminal.debugger:TerminalPdb",
+    "--ds=tests.settings",
+]
 filterwarnings = [
     "error::ResourceWarning",
     "error::DeprecationWarning",
@@ -114,9 +119,7 @@ publish-url = "https://test.pypi.org/legacy/"
 explicit = true
 
 [tool.coverage.report]
-omit = [
-    "*/__init__.py",
-]
+omit = ["*/__init__.py"]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -125,8 +128,6 @@ exclude_lines = [
 ]
 
 [tool.coverage.run]
-source = [
-    "django_sqlite_strict",
-]
+source = ["django_sqlite_strict"]
 parallel = true
 concurrency = ["multiprocessing"]
