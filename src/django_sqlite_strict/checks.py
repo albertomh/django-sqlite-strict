@@ -34,7 +34,9 @@ def check_column_types(
 
     errors: list[CheckMessage] = []
 
-    for connection, model in _strict_models(databases or []):
+    for connection, model in _strict_models(
+        databases if databases is not None else list(connections)
+    ):
         for field in model._meta.local_fields:
             db_type = field.db_type(connection)
             if db_type is None or db_type.lower() in STRICT_TYPES:

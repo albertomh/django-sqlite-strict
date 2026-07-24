@@ -23,8 +23,21 @@ class GeneratedField(models.Field):
         return None
 
 
-def test_no_databases_given():
-    assert checks.check_column_types(databases=None) == []
+def test_none_databases_checks_all_configured():
+    """databases=None should check all configured databases, not skip all."""
+    with isolate_apps("tests") as registry:
+
+        class Printer(models.Model):
+            mac_address = MacAddressField()
+
+            class Meta:
+                app_label = "tests"
+
+        with mock.patch.object(checks, "apps", registry):
+            result = checks.check_column_types(databases=None)
+
+    assert len(result) == 1
+    assert result[0].id == "dss.E001"
 
 
 @pytest.mark.xfail(reason="DatabaseWrapper.data_types needs fleshing out")
