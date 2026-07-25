@@ -1,3 +1,5 @@
+# <https://docs.djangoproject.com/en/stable/topics/checks/>
+
 from collections.abc import Generator
 
 from django.apps import AppConfig, apps
