@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 from django.core.checks import Error
 from django.db import models
+from django.db.backends.base.base import BaseDatabaseWrapper
 from django.test.utils import isolate_apps
 
 from django_sqlite_strict import checks
@@ -80,6 +81,15 @@ def test_valid_column_types_are_ignored():
             assert checks.check_column_types(databases=["default"]) == []
 
 
+def test_strict_models_skips_non_django_sqlite_strict_connections():
+    mock_connection = mock.Mock(spec=BaseDatabaseWrapper)
+    mock_connections = {"default": mock_connection}
+
+    with mock.patch.object(checks, "connections", mock_connections):
+        # need to materialise the empty generator to check it
+        assert list(checks._strict_models(databases=["default"])) == []
+
+
 def test_unmanaged_models_are_ignored():
     with isolate_apps("tests") as registry:
 
@@ -113,3 +123,23 @@ def test_proxy_models_are_ignored():
 
     (error,) = result
     assert error.obj is Printer._meta.get_field("mac_address")
+
+
+def test_router_can_exclude_models():
+    with isolate_apps("tests") as registry:
+
+        class Printer(models.Model):
+            mac_address = MacAddressField()
+
+            class Meta:
+                app_label = "tests"
+
+        with (
+            mock.patch.object(checks, "apps", registry),
+            mock.patch.object(
+                checks.router,
+                "allow_migrate_model",
+                return_value=False,
+            ),
+        ):
+            assert checks.check_column_types(databases=["default"]) == []
