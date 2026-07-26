@@ -123,3 +123,23 @@ def test_proxy_models_are_ignored():
 
     (error,) = result
     assert error.obj is Printer._meta.get_field("mac_address")
+
+
+def test_router_can_exclude_models():
+    with isolate_apps("tests") as registry:
+
+        class Printer(models.Model):
+            mac_address = MacAddressField()
+
+            class Meta:
+                app_label = "tests"
+
+        with (
+            mock.patch.object(checks, "apps", registry),
+            mock.patch.object(
+                checks.router,
+                "allow_migrate_model",
+                return_value=False,
+            ),
+        ):
+            assert checks.check_column_types(databases=["default"]) == []
