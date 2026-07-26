@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/albertomh/django-sqlite-strict/compare/0.1.0...0.2.0) (2026-07-26)
+
+
+### Features
+
+* Run column types check on AppConfig.ready ([#23](https://github.com/albertomh/django-sqlite-strict/issues/23)) ([bd0f932](https://github.com/albertomh/django-sqlite-strict/commit/bd0f93264e7be77ec689421b8eb470182aac9cbb))
+
+
+### Bug Fixes
+
+* Check all databases when databases=None ([#19](https://github.com/albertomh/django-sqlite-strict/issues/19)) ([e141b4e](https://github.com/albertomh/django-sqlite-strict/commit/e141b4e94ee2c5a010808bad104c80792b24e729))
+
+
+### Documentation
+
+* Flesh out README - install, features, development ([#21](https://github.com/albertomh/django-sqlite-strict/issues/21)) ([e36efa6](https://github.com/albertomh/django-sqlite-strict/commit/e36efa689ef6109fd39d28b53d47fb7df110324d))
+
 ## 0.1.0 (2026-07-24)
 
 
