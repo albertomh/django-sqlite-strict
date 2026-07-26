@@ -24,9 +24,9 @@ jobs:
       session: ${{ steps.set-matrix.outputs.session }}
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v8.3.2
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
-          version: "0.11.29"
+          version: "0.11.32"
       - uses: wntrblm/nox@main
       - id: set-matrix
         run: echo "session=$(uvx nox --json -l -s test | jq -c '[.[].session]')" >> "$GITHUB_OUTPUT"
@@ -42,9 +42,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v8.3.2
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
-          version: "0.11.29"
+          version: "0.11.32"
           enable-cache: true
       - uses: wntrblm/nox@main
       - run: nox -s "${{ matrix.session }}"
