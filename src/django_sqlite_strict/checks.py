@@ -4,7 +4,7 @@ from collections.abc import Generator
 
 from django.apps import AppConfig, apps
 from django.core.checks import CheckMessage, Error
-from django.db import connections
+from django.db import connections, router
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import Model
 
@@ -22,8 +22,8 @@ def _strict_models(
         if not isinstance(connection, DatabaseWrapper):
             continue
         for model in apps.get_models(include_auto_created=True):
-            # skip models we don't create tables for
-            if model._meta.proxy or not model._meta.managed:
+            # skip models we don't create tables for (proxy, swapped, unmanaged)
+            if not router.allow_migrate_model(alias, model) or not model._meta.managed:
                 continue
             yield connection, model
 
