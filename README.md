@@ -27,7 +27,7 @@ STRICT tables.
 1. Add as a dependency:
 
     ```sh
-    uv add django-sqlite-strict`
+    uv add django-sqlite-strict
     ```
 
 1. In `settings.py`, add to `INSTALLED_APPS` after any first-party apps and before
