@@ -1,4 +1,7 @@
 from django.apps import AppConfig
+from django.core.checks import Tags, register
+
+from django_sqlite_strict import checks
 
 
 class DjangoSqliteStrictConfig(AppConfig):
@@ -6,4 +9,4 @@ class DjangoSqliteStrictConfig(AppConfig):
     verbose_name = "django-sqlite-strict"
 
     def ready(self) -> None:
-        print("Using database engine 'django-sqlite-strict'")  # noqa: T201
+        register(Tags.database)(checks.check_column_types)

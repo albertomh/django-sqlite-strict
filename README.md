@@ -27,7 +27,7 @@ STRICT tables.
 1. Add as a dependency:
 
     ```sh
-    uv add django-sqlite-strict`
+    uv add django-sqlite-strict
     ```
 
 1. In `settings.py`, add to `INSTALLED_APPS` after any first-party apps and before
@@ -102,8 +102,12 @@ uv add ~/Projects/django-sqlite-strict/dist/django_sqlite_strict-M.m.p-py3-none-
 
 ## Acknowledgements
 
+<!-- markdownlint-disable MD033 no-inline-html -->
+<!-- markdownlint-disable MD013 line-length -->
 This package was inspired by Martin Dørum's advocacy for STRICT tables in the article
-['SQLite should have (Rust-style) editions'](https://mort.coffee/home/sqlite-editions/).
+<a href="https://mort.coffee/home/sqlite-editions/" target="_blank">SQLite should have (Rust-style) editions</a>.
+<!-- markdownlint-enable MD013 line-length -->
+<!-- markdownlint-enable MD033 no-inline-html -->
 
 ---
 
@@ -127,3 +131,4 @@ with opinionated tooling.
   <figcaption>19th century apparatus to enforce STRICT columns (<a href="https://catalogue.etoncollege.com/object-pa-a-142-113-2014" target="_blank">source</a>, Eton College)</figcaption>
   <!-- markdownlint-enable MD013 line-length -->
 </figure>
+<!-- markdownlint-enable MD033 no-inline-html -->
