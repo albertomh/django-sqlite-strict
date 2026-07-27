@@ -9,9 +9,7 @@ from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import Model
 
 from django_sqlite_strict.base import DatabaseWrapper
-
-# The only column types STRICT tables accept: <https://www.sqlite.org/stricttables.html>
-STRICT_TYPES = frozenset({"int", "integer", "real", "text", "blob", "any"})
+from django_sqlite_strict.constants import STRICT_TYPES
 
 
 def _strict_models(
