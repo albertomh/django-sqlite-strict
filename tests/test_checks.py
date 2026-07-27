@@ -1,6 +1,5 @@
 from unittest import mock
 
-import pytest
 from django.core.checks import Error
 from django.db import models
 from django.db.backends.base.base import BaseDatabaseWrapper
@@ -41,7 +40,6 @@ def test_none_databases_checks_all_configured():
     assert result[0].id == "dss.E001"
 
 
-@pytest.mark.xfail(reason="DatabaseWrapper.data_types needs fleshing out")
 def test_project_models_pass():
     assert checks.check_column_types(databases=["default"]) == []
 
