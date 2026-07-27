@@ -3,13 +3,13 @@
 from collections.abc import Generator
 
 from django.apps import AppConfig, apps
-from django.core.checks import CheckMessage, Error
+from django.core.checks import CheckMessage, Error, Warning
 from django.db import connections, router
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import Model
 
 from django_sqlite_strict.base import DatabaseWrapper
-from django_sqlite_strict.constants import STRICT_TYPES
+from django_sqlite_strict.constants import REAL_EXACT_DIGITS, STRICT_TYPES
 
 
 def _strict_models(
@@ -31,7 +31,6 @@ def check_column_types(
     databases: list[str] | None = None,
     **kwargs: object,
 ) -> list[CheckMessage]:
-
     errors: list[CheckMessage] = []
 
     for connection, model in _strict_models(
@@ -57,3 +56,39 @@ def check_column_types(
             )
 
     return errors
+
+
+def check_decimal_max_digits(
+    app_configs: list[AppConfig] | None = None,
+    databases: list[str] | None = None,
+    **kwargs: object,
+) -> list[CheckMessage]:
+    warnings: list[CheckMessage] = []
+
+    for _connection, model in _strict_models(
+        databases if databases is not None else list(connections)
+    ):
+        for field in model._meta.local_fields:
+            if field.get_internal_type() != "DecimalField":
+                continue
+            max_digits = getattr(field, "max_digits", None)
+            if max_digits is not None and max_digits > REAL_EXACT_DIGITS:
+                warning_message = (
+                    f"{model._meta.label}.{field.name} has DecimalField(max_digits={max_digits}), "  # noqa: E501
+                    f"but SQLite STRICT stores decimals as REAL, which maxes out "
+                    f"at {REAL_EXACT_DIGITS} significant digits."
+                )
+                hint = (
+                    f"Keep max_digits <= {REAL_EXACT_DIGITS}, store integer minor units "
+                    "in a BigIntegerField, or switch to a database with DECIMAL support."
+                )
+                warnings.append(
+                    Warning(
+                        warning_message,
+                        hint=hint,
+                        obj=field,
+                        id="dss.W001",
+                    )
+                )
+
+    return warnings

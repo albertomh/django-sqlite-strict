@@ -1,6 +1,6 @@
 from unittest import mock
 
-from django.core.checks import Error
+from django.core.checks import Error, Warning
 from django.db import models
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.test.utils import isolate_apps
@@ -42,6 +42,7 @@ def test_none_databases_checks_all_configured():
 
 def test_project_models_pass():
     assert checks.check_column_types(databases=["default"]) == []
+    assert checks.check_decimal_max_digits(databases=None) == []
 
 
 def test_unmapped_column_type_reported():
@@ -141,3 +142,26 @@ def test_router_can_exclude_models():
             ),
         ):
             assert checks.check_column_types(databases=["default"]) == []
+
+
+def test_wide_decimal_field_warned():
+    with isolate_apps("tests") as registry:
+
+        class Account(models.Model):
+            amount = models.DecimalField(max_digits=20, decimal_places=4)
+
+            class Meta:
+                app_label = "tests"
+
+        with mock.patch.object(checks, "apps", registry):
+            result = checks.check_decimal_max_digits(databases=["default"])
+
+    assert len(result) == 1
+    warning = result[0]
+    assert isinstance(warning, Warning)
+    assert warning.id == "dss.W001"
+    assert warning.msg == (
+        "tests.Account.amount has DecimalField(max_digits=20), "
+        "but SQLite STRICT stores decimals as REAL, which maxes out "
+        "at 15 significant digits."
+    )
