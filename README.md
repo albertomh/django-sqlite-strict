@@ -77,9 +77,12 @@ remains unchanged.
 
 `django-sqlite-strict` will register the following [Django system checks](https://docs.djangoproject.com/en/stable/topics/checks/):
 
-- [`check_column_types`](./src/django_sqlite_strict/checks.py#L31)  
+- [`check_column_types`](./src/django_sqlite_strict/checks.py#L29)  
   Raises an error if any entry in the `DATABASES` setting has a column of a type that is not
   accepted by STRICT tables.
+- [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L62)  
+  Raises a warning if a `DecimalField` has `max_digits` set to a value higher than the
+  '15 significant digits' threshold up to which SQLite's REAL stores decimals.
 
 ## Develop
 
