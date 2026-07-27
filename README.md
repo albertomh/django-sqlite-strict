@@ -9,7 +9,7 @@
 [![nox](https://img.shields.io/badge/%F0%9F%A6%8A-Nox-D85E00.svg?style=flat-square)](https://github.com/wntrblm/nox)
 [![coverage](https://img.shields.io/badge/😴_coverage-59aabd?style=flat-square)](https://coverage.readthedocs.io/)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/albertomh/django-sqlite-strict/ci.yaml?style=flat-square&logo=github&label=CI&labelColor=000000)](https://github.com/albertomh/django-sqlite-strict/actions/workflows/ci.yaml)
-[![PyPI Version](https://img.shields.io/pypi/v/django-sqlite-strict?style=flat-square&labelColor=0073b7&color=0073b7&label=📦%20PyPI)](https://pypi.org/project/django-sqlite-strict/)
+[![PyPI Version](https://img.shields.io/pypi/v/django-sqlite-strict?style=flat-square&labelColor=0073b7&color=0073b7&label=📦%20PyPI&cachebust=1785060266)](https://pypi.org/project/django-sqlite-strict/)
 <!-- markdownlint-enable MD013 line-length -->
 
 `django-sqlite-strict` is a drop-in replacement for Django's stock SQLite engine that enforces
