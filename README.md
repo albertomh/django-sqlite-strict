@@ -54,6 +54,25 @@ STRICT tables.
 
 ## Features
 
+### Compared to Django's stock SQLite backend
+
+SQLite `STRICT` tables only permit the storage classes `INTEGER`, `REAL`, `TEXT`, `BLOB` and `ANY`
+([source](https://www.sqlite.org/stricttables.html)).  
+To generate valid `STRICT` tables, `django-sqlite-strict` maps field types differently to Django's
+stock SQLite backend. For example:
+
+- `CharField` is stored as `TEXT` instead of `VARCHAR`  
+- `BooleanField` as `INTEGER` instead of `BOOL`  
+- `DecimalField` as `REAL` instead of `DECIMAL`
+
+These changes affect only the SQL column types used in migrations, Django's Python field API
+remains unchanged.
+
+> [!WARNING]
+> Because of the above `STRICT`-compliant field type mappings, `DecimalField` is stored as `REAL`.  
+> Applications requiring exact decimal arithmetic should consider storing integer minor units or
+> using a database with native DECIMAL support.
+
 ### System checks
 
 `django-sqlite-strict` will register the following [Django system checks](https://docs.djangoproject.com/en/stable/topics/checks/):
