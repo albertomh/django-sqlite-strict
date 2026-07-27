@@ -57,3 +57,13 @@ def check_column_types(
             )
 
     return errors
+
+
+def check_decimal_max_digits(
+    app_configs: list[AppConfig] | None = None,
+    databases: list[str] | None = None,
+    **kwargs: object,
+) -> list[CheckMessage]:
+    warnings: list[CheckMessage] = []
+
+    return warnings
