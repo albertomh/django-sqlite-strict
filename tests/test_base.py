@@ -4,6 +4,9 @@ import sys
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
+from django_sqlite_strict.base import DatabaseWrapper
+from django_sqlite_strict.constants import STRICT_TYPES
+
 BASE_MODULE = "django_sqlite_strict.base"
 
 
@@ -28,3 +31,16 @@ def test_compatible_sqlite_version_does_not_raise(mocker):
         reload_module(BASE_MODULE)
     except ImproperlyConfigured:
         pytest.fail("Unexpected ImproperlyConfigured for SQLite 3.37.0")
+
+
+def test_all_data_types_are_strict_compatible():
+    for field_type, sql_type in DatabaseWrapper.data_types.items():
+        # resolve dynamic type mappings, eg. `CharField` -> `varchar(max_length)`
+        cur_sql_type = sql_type({"max_length": 255}) if callable(sql_type) else sql_type
+
+        # ignore length specifiers, eg. `varchar(255)` -> `varchar`
+        base_type = cur_sql_type.partition("(")[0].lower()
+
+        assert base_type in STRICT_TYPES, (
+            f"{field_type} maps to non-STRICT type {cur_sql_type!r}"
+        )
