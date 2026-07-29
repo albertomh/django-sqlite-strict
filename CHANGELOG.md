@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/albertomh/django-sqlite-strict/compare/0.2.0...0.3.0) (2026-07-29)
+
+
+### Features
+
+* Extend model check to exclude swapped models ([#26](https://github.com/albertomh/django-sqlite-strict/issues/26)) ([460471f](https://github.com/albertomh/django-sqlite-strict/commit/460471f602ad909457f424a1e5142e3b6536c92c))
+* Override type mappings rejected by SQLite STRICT ([#28](https://github.com/albertomh/django-sqlite-strict/issues/28)) ([47e904a](https://github.com/albertomh/django-sqlite-strict/commit/47e904add5e769da394627ed4d8675769c79a43c))
+* Warning logged when DecimalField with &gt; 15 digits used ([#30](https://github.com/albertomh/django-sqlite-strict/issues/30)) ([eee2f33](https://github.com/albertomh/django-sqlite-strict/commit/eee2f3300ce89c9c3831b6c31b717b61d3709d62))
+
 ## [0.2.0](https://github.com/albertomh/django-sqlite-strict/compare/0.1.0...0.2.0) (2026-07-26)
 
 
