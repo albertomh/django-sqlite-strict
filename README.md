@@ -144,13 +144,13 @@ with opinionated tooling.
 ---
 
 <!-- markdownlint-disable MD033 no-inline-html -->
-<figure align="center">
+<div align="center">
   <!-- markdownlint-disable MD013 line-length -->
-  <img
-    src="docs/eton_birching_block.jpg"
-    alt=""
-    width=400px/>
-  <figcaption>19th century apparatus to enforce STRICT columns (<a href="https://catalogue.etoncollege.com/object-pa-a-142-113-2014" target="_blank">source</a>, Eton College)</figcaption>
+      <img
+        src="docs/eton_birching_block.jpg"
+        alt=""
+        width=400px/>
+      <p align="center">19th century apparatus to enforce STRICT columns (<a href="https://catalogue.etoncollege.com/object-pa-a-142-113-2014" target="_blank">source</a>, Eton College)</p>
   <!-- markdownlint-enable MD013 line-length -->
-</figure>
+</div>
 <!-- markdownlint-enable MD033 no-inline-html -->
