@@ -61,7 +61,7 @@ pythonpath = ["."]
 addopts = [
     "--strict-markers",
     "--pdbcls=IPython.terminal.debugger:TerminalPdb",
-    "--ds=tests.settings",
+    "--ds=tests.test_project.settings",
 ]
 filterwarnings = [
     "error::ResourceWarning",
