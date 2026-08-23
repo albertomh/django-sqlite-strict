@@ -1,8 +1,11 @@
+# ruff: noqa: TRY003
+
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, connections
+from django.db.backends.sqlite3.base import DatabaseWrapper as SQLiteDatabaseWrapper
 
 
 class Command(BaseCommand):
@@ -28,6 +31,9 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         connection = connections[options["database"]]
+
+        if not isinstance(connection, SQLiteDatabaseWrapper):
+            raise CommandError(f"{options['database']!r} is not a SQLite database.")
 
         with connection.cursor() as cursor:
             cursor.execute(
