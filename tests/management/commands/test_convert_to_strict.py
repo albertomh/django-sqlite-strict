@@ -4,7 +4,7 @@ import pytest
 from django.core.management import CommandError, call_command
 from django.db import connection
 
-from tests.test_project.models import Legacy
+from tests.test_project.models import Indexed, Legacy
 from tests.utils import non_strict_tables
 
 
@@ -64,3 +64,18 @@ def test_convert_to_strict_skips_unknown_tables(legacy_sql_table, capsys):
     with connection.cursor() as cursor:
         cursor.execute("SELECT value FROM legacy_sql")
         assert cursor.fetchall() == []
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_preserves_indexes(non_strict_table):
+    Indexed.objects.create(email="a@example.com")
+
+    non_strict_table(Indexed)
+
+    call_command("convert_to_strict", no_input=True)
+
+    with connection.cursor() as cursor:
+        cursor.execute(f'PRAGMA index_list("{Indexed._meta.db_table}")')
+        indexes = cursor.fetchall()
+
+    assert any(index[2] == 0 for index in indexes)
