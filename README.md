@@ -1,15 +1,15 @@
 # django-sqlite-strict
 
 <!-- markdownlint-disable MD013 line-length -->
-![python >= 3.10](https://img.shields.io/badge/>=3.10-4584b6?logo=python&logoColor=ffde57&style=flat-square)
-[![Django](https://img.shields.io/badge/Django-092E20?logo=django&logoColor=ffffff&style=flat-square)](https://docs.djangoproject.com/en/stable/)
+![python >= 3.10](https://img.shields.io/badge/Python%20>=%203.10-4584b6?logo=python&logoColor=ffde57&style=flat-square)
+[![Django >= 4.2](https://img.shields.io/badge/Django%20>=%204.2-092E20?logo=django&logoColor=ffffff&style=flat-square)](https://docs.djangoproject.com/en/stable/)
 [![SQLite](https://img.shields.io/badge/SQLite-ffffff?logo=sqlite&logoColor=0f80cc&style=flat-square)](https://www.sqlite.org/docs.html)
 [![prek](https://img.shields.io/badge/prek-CC5A23?logo=prek&logoColor=FFFFFF&style=flat-square)](https://github.com/j178/prek)
 [![pytest](https://img.shields.io/badge/pytest-0A9EDC?logo=pytest&logoColor=white&style=flat-square)](https://github.com/pytest-dev/pytest)
 [![nox](https://img.shields.io/badge/%F0%9F%A6%8A-Nox-D85E00.svg?style=flat-square)](https://github.com/wntrblm/nox)
 [![coverage](https://img.shields.io/badge/😴_coverage-59aabd?style=flat-square)](https://coverage.readthedocs.io/)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/albertomh/django-sqlite-strict/ci.yaml?style=flat-square&logo=github&label=CI&labelColor=000000)](https://github.com/albertomh/django-sqlite-strict/actions/workflows/ci.yaml)
-[![PyPI Version](https://img.shields.io/pypi/v/django-sqlite-strict?style=flat-square&labelColor=0073b7&color=0073b7&label=📦%20PyPI&cachebust=1785060266)](https://pypi.org/project/django-sqlite-strict/)
+[![PyPI Version](https://img.shields.io/pypi/v/django-sqlite-strict?style=flat-square&labelColor=0073b7&color=0073b7&label=📦%20PyPI&cachebust=1785322000)](https://pypi.org/project/django-sqlite-strict/)
 <!-- markdownlint-enable MD013 line-length -->
 
 `django-sqlite-strict` is a drop-in replacement for Django's stock SQLite engine that enforces
@@ -113,7 +113,7 @@ uvx nox -s test
 Build the package as a binary distribution (wheel) and install it in a Django project:
 
 ```sh
-# from django-sqlite-strict's root directory
+# in django-sqlite-strict's root directory
 uv build
 
 # in the target Django webapp project
