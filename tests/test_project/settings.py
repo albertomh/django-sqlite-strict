@@ -13,5 +13,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django_sqlite_strict",
         "NAME": ":memory:",
-    }
+    },
+    "other": {
+        "ENGINE": "django.db.backends.dummy",
+    },
 }
