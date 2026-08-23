@@ -84,6 +84,12 @@ remains unchanged.
   Raises a warning if a `DecimalField` has `max_digits` set to a value higher than the
   '15 significant digits' threshold up to which SQLite's REAL stores decimals.
 
+### Management commands
+
+- [`convert_to_strict`](./src/django_sqlite_strict/management/commands/convert_to_strict.py)  
+  Rebuilds existing non-STRICT tables as STRICT ones. Pass `--dry-run` to preview the effect of this
+  command, and `--no-input` for use in CI pipelines.
+
 ## Develop
 
 ### Development prerequisites
