@@ -30,6 +30,11 @@ class Command(BaseCommand):
             help="Database alias to convert (default: %(default)s).",
         )
         parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="List the tables that would be rebuilt and exit.",
+        )
+        parser.add_argument(
             "--no-input",
             action="store_true",
             help="Do not prompt for confirmation.",
@@ -75,12 +80,14 @@ class Command(BaseCommand):
         ]
         skipped = sorted(non_strict_tables - models_by_table.keys())
 
-        for model in rebuild:
-            self.stdout.write(f"Would rebuild {model._meta.db_table}")
-        for table in skipped:
-            self.stdout.write(
-                self.style.WARNING(f"Would skip {table} (no managed Django model)")
-            )
+        if options["dry_run"]:
+            for model in rebuild:
+                self.stdout.write(f"Would rebuild {model._meta.db_table}")
+            for table in skipped:
+                self.stdout.write(
+                    self.style.WARNING(f"Would skip {table} (no managed Django model)")
+                )
+            return
 
         self.stdout.write(
             self.style.WARNING(
