@@ -100,7 +100,7 @@ all supported Python/Django pairings (see [`noxfile.py`](./noxfile.py#L5)).
 
 ```sh
 # run latest supported Python/Django pairing only
-# (eg. Python 3.14 / Django 6.0)
+# (eg. Python 3.14 / Django 6.1)
 uvx nox
 
 # run all test sessions
