@@ -1,10 +1,11 @@
+from datetime import date
 from decimal import Decimal
 
 import pytest
 from django.core.management import CommandError, call_command
 from django.db import connection, utils
 
-from tests.test_project.models import Author, Book, Indexed, Legacy
+from tests.test_project.models import Author, Book, Indexed, Legacy, Tag
 from tests.utils import non_strict_tables
 
 
@@ -101,3 +102,21 @@ def test_convert_to_strict_preserves_foreign_keys(non_strict_table):
 
     with pytest.raises(utils.IntegrityError):
         Book.objects.create(author_id=999999)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_preserves_many_to_many(non_strict_table):
+    non_strict_table(Book.tags.through)
+
+    call_command("convert_to_strict", no_input=True)
+
+    author = Author.objects.create(name="Ray Bradbury")
+    book = Book.objects.create(
+        author=author,
+        published=date(1953, 10, 19),
+    )
+    tag = Tag.objects.create(name="science-fiction")
+
+    book.tags.add(tag)
+
+    assert list(book.tags.all()) == [tag]
