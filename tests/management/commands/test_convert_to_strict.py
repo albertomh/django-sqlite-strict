@@ -2,11 +2,15 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django import VERSION as DJANGO_VERSION
 from django.core.management import CommandError, call_command
 from django.db import connection, utils
 
 from tests.test_project.models import Author, Book, Indexed, Legacy, Tag
 from tests.utils import non_strict_tables
+
+if DJANGO_VERSION >= (5, 0):
+    from tests.test_project.models import GeneratedBook
 
 
 @pytest.mark.django_db(transaction=True)
@@ -150,3 +154,24 @@ def test_convert_to_strict_preserves_many_to_many(non_strict_table):
     book.tags.add(tag)
 
     assert list(book.tags.all()) == [tag]
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.skipif(
+    DJANGO_VERSION < (5, 0),
+    reason="GeneratedField was introduced in Django 5.0",
+)
+def test_convert_to_strict_preserves_generated_columns(non_strict_table):
+    non_strict_table(Book)
+
+    call_command("convert_to_strict", no_input=True)
+
+    year = 1953
+    author = Author.objects.create(name="Ray Bradbury")
+    book = GeneratedBook.objects.create(
+        author=author,
+        published=date(year, 10, 19),
+    )
+    book.refresh_from_db()
+
+    assert book.year == year
