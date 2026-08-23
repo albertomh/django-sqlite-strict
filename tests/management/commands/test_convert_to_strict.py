@@ -27,6 +27,36 @@ def test_convert_to_strict_is_idempotent(capsys):
 
 
 @pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_dry_run_lists_tables(non_strict_table, capsys):
+    non_strict_table(Author)
+    non_strict_table(Book)
+
+    call_command("convert_to_strict", dry_run=True, no_input=True)
+
+    out = capsys.readouterr().out
+    assert f"Would rebuild {Author._meta.db_table}" in out
+    assert f"Would rebuild {Book._meta.db_table}" in out
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_dry_run_does_not_modify_tables(non_strict_table, capsys):
+    non_strict_table(Author)
+
+    call_command("convert_to_strict", dry_run=True, no_input=True)
+
+    assert Author._meta.db_table in non_strict_tables()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_dry_run_skips_unknown_tables(legacy_sql_table, capsys):
+    call_command("convert_to_strict", dry_run=True, no_input=True)
+
+    out = capsys.readouterr().out
+    assert "Would skip legacy_sql (no managed Django model)" in out
+    assert non_strict_tables() == ["legacy_sql"]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_convert_to_strict_rebuilds_legacy_tables():
     table = Legacy._meta.db_table
 

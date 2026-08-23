@@ -1,6 +1,7 @@
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 
 import pytest
+from django.core.management import call_command
 from django.db import connection, models
 
 
@@ -22,7 +23,7 @@ def legacy_sql_table():
 
 
 @pytest.fixture
-def non_strict_table() -> Callable[[type[models.Model]], None]:
+def non_strict_table() -> Generator[Callable[[type[models.Model]], None], None, None]:
     """
     Recreate a model's database table as a non-STRICT SQLite table.
 
@@ -30,6 +31,8 @@ def non_strict_table() -> Callable[[type[models.Model]], None]:
     be tested. Existing rows are preserved so tests can verify that schema
     features survive conversion.
     """
+
+    remade: list[type[models.Model]] = []
 
     def recreate(model: type[models.Model]) -> None:
         table = model._meta.db_table
@@ -60,4 +63,9 @@ def non_strict_table() -> Callable[[type[models.Model]], None]:
                     rows,
                 )
 
-    return recreate
+        remade.append(model)
+
+    yield recreate
+
+    if remade:
+        call_command("convert_to_strict", no_input=True, stdout=open("/dev/null", "w"))
