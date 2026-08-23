@@ -39,3 +39,7 @@ class Legacy(models.Model):
 
 class Indexed(models.Model):
     email = models.EmailField(db_index=True)
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=100, unique=True)
