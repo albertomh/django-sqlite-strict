@@ -4,7 +4,7 @@ import pytest
 from django.core.management import CommandError, call_command
 from django.db import connection, utils
 
-from tests.test_project.models import Author, Indexed, Legacy
+from tests.test_project.models import Author, Book, Indexed, Legacy
 from tests.utils import non_strict_tables
 
 
@@ -91,3 +91,13 @@ def test_convert_to_strict_preserves_unique_constraints(non_strict_table):
 
     with pytest.raises(utils.IntegrityError):
         Author.objects.create(name="abc")
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_preserves_foreign_keys(non_strict_table):
+    non_strict_table(Book)
+
+    call_command("convert_to_strict", no_input=True)
+
+    with pytest.raises(utils.IntegrityError):
+        Book.objects.create(author_id=999999)
