@@ -1,4 +1,6 @@
+from django import VERSION as DJANGO_VERSION
 from django.db import models
+from django.db.models.functions import ExtractYear
 
 
 class KitchenSink(models.Model):
@@ -54,3 +56,19 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     published = models.DateField(null=True)
     tags = models.ManyToManyField(Tag, related_name="books")
+
+
+if DJANGO_VERSION >= (5, 0):
+
+    class GeneratedBook(models.Model):
+        author = models.ForeignKey(
+            Author,
+            on_delete=models.CASCADE,
+        )
+        published = models.DateField()
+
+        year = models.GeneratedField(
+            expression=ExtractYear("published"),
+            output_field=models.IntegerField(),
+            db_persist=True,
+        )
