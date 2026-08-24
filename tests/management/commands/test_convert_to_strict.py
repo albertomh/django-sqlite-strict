@@ -61,6 +61,28 @@ def test_convert_to_strict_dry_run_skips_unknown_tables(legacy_sql_table, capsys
 
 
 @pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_prompts_for_confirmation(non_strict_table, monkeypatch):
+    non_strict_table(Author)
+
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+
+    call_command("convert_to_strict")
+
+    assert Author._meta.db_table in non_strict_tables()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_proceeds_on_confirmation(non_strict_table, monkeypatch):
+    non_strict_table(Author)
+
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+
+    call_command("convert_to_strict")
+
+    assert non_strict_tables() == []
+
+
+@pytest.mark.django_db(transaction=True)
 def test_convert_to_strict_rebuilds_legacy_tables():
     table = Legacy._meta.db_table
 
