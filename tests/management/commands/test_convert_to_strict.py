@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from django import VERSION as DJANGO_VERSION
 from django.core.management import CommandError, call_command
-from django.db import connection, utils
+from django.db import DatabaseError, connection, utils
 
 from tests.test_project.models import Author, Book, Indexed, Legacy, Tag
 from tests.utils import non_strict_tables
@@ -175,3 +175,24 @@ def test_convert_to_strict_preserves_generated_columns(non_strict_table):
     book.refresh_from_db()
 
     assert book.year == year
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_raises_on_database_error(
+    non_strict_table, capsys, monkeypatch
+):
+    non_strict_table(Author)
+
+    def boom(self, model):
+        raise DatabaseError("injected")
+
+    monkeypatch.setattr(
+        "django_sqlite_strict.management.commands.convert_to_strict.DatabaseSchemaEditor._remake_table",
+        boom,
+    )
+
+    with pytest.raises(DatabaseError, match="injected"):
+        call_command("convert_to_strict", no_input=True)
+    assert "FAILED" in capsys.readouterr().out
+
+    monkeypatch.undo()
