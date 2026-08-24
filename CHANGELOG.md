@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0](https://github.com/albertomh/django-sqlite-strict/compare/0.3.0...1.0.0) (2026-08-24)
+
+
+### Features
+
+* Add a convert_to_strict Django management command ([#35](https://github.com/albertomh/django-sqlite-strict/issues/35)) ([7dfeb9c](https://github.com/albertomh/django-sqlite-strict/commit/7dfeb9c4346f014838e467e82cc269a64fced7d5))
+* Add a dry-run flag to convert_to_strict ([#39](https://github.com/albertomh/django-sqlite-strict/issues/39)) ([d13a732](https://github.com/albertomh/django-sqlite-strict/commit/d13a7323afc31b08e21fa7e265f640b5f1ee0aae))
+
+
+### Documentation
+
+* Update PyPI dev status classifier ([#43](https://github.com/albertomh/django-sqlite-strict/issues/43)) ([fd478f5](https://github.com/albertomh/django-sqlite-strict/commit/fd478f528bd7a0c99e7d8bceacb4e2e88f68c8e9))
+
+
+### Tests
+
+* Convert_to_strict prompts for confirmation ([#42](https://github.com/albertomh/django-sqlite-strict/issues/42)) ([96ef298](https://github.com/albertomh/django-sqlite-strict/commit/96ef298edb1fb2d3f5a96df7ad1603873499fb21))
+
 ## [0.3.0](https://github.com/albertomh/django-sqlite-strict/compare/0.2.0...0.3.0) (2026-07-29)
 
 
