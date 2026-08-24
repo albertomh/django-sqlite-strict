@@ -11,7 +11,7 @@
 # 1. Create a Personal Access Token (PAT) with the following permissions:
 #    ```text
 #    contents: read & write
-#    metadata: read & write
+#    metadata: read
 #    pull-requests: read & write
 #    ```
 # 2. Use the PAT to populate a GitHub Actions secret called `DJANGO_SQLITE_STRICT_RELEASE_PLEASE_TOKEN`

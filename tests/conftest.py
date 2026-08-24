@@ -1,3 +1,4 @@
+import io
 from collections.abc import Callable, Generator
 
 import pytest
@@ -68,4 +69,4 @@ def non_strict_table() -> Generator[Callable[[type[models.Model]], None], None, 
     yield recreate
 
     if remade:
-        call_command("convert_to_strict", no_input=True, stdout=open("/dev/null", "w"))
+        call_command("convert_to_strict", no_input=True, stdout=io.StringIO())
