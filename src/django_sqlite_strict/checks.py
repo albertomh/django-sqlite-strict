@@ -58,6 +58,49 @@ def check_column_types(
     return errors
 
 
+def check_tables_are_strict(
+    app_configs: list[AppConfig] | None = None,
+    databases: list[str] | None = None,
+    **kwargs: object,
+) -> list[CheckMessage]:
+    errors: list[CheckMessage] = []
+    tables_by_alias: dict[str, tuple[set[str], set[str]]] = {}
+    for connection, model in _strict_models(
+        databases if databases is not None else list(connections)
+    ):
+        if connection.alias not in tables_by_alias:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT name, strict FROM pragma_table_list "
+                    "WHERE schema = 'main' AND type = 'table' "
+                    "AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\'"
+                )
+                rows = cursor.fetchall()
+            tables_by_alias[connection.alias] = (
+                {name for name, _strict in rows},
+                {name for name, strict in rows if not strict},
+            )
+        existing, non_strict = tables_by_alias[connection.alias]
+        table = model._meta.db_table
+        if table not in existing:
+            # Fresh database: migrate will create the table STRICT.
+            continue
+        if table in non_strict:
+            errors.append(
+                Error(
+                    f"Table {table!r} of model {model._meta.label} is not STRICT.",
+                    hint=(
+                        "The table predates switching to the"
+                        " django_sqlite_strict engine. Run"
+                        " ./manage.py convert_to_strict to rebuild it."
+                    ),
+                    obj=model,
+                    id="dss.E002",
+                )
+            )
+    return errors
+
+
 def check_decimal_max_digits(
     app_configs: list[AppConfig] | None = None,
     databases: list[str] | None = None,
