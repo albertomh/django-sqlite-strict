@@ -80,7 +80,10 @@ remains unchanged.
 - [`check_column_types`](./src/django_sqlite_strict/checks.py#L29)  
   Raises an error if any entry in the `DATABASES` setting has a column of a type that is not
   accepted by STRICT tables.
-- [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L62)  
+- [`check_tables_are_strict`](./src/django_sqlite_strict/checks.py#L61)  
+  Raises an error if a model's table already exists in the database but is not STRICT,
+  ie. the `ENGINE` was switched without running `convert_to_strict`.
+- [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L104)  
   Raises a warning if a `DecimalField` has `max_digits` set to a value higher than the
   '15 significant digits' threshold up to which SQLite's REAL stores decimals.
 

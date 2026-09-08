@@ -1,11 +1,14 @@
 from unittest import mock
 
+import pytest
 from django.core.checks import Error, Warning
-from django.db import models
+from django.core.management import call_command
+from django.db import connection, models
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.test.utils import isolate_apps
 
 from django_sqlite_strict import checks
+from tests.test_project.models import Legacy
 
 
 class MacAddressField(models.Field):
@@ -40,8 +43,10 @@ def test_none_databases_checks_all_configured():
     assert result[0].id == "dss.E001"
 
 
-def test_project_models_pass():
-    assert checks.check_column_types(databases=["default"]) == []
+@pytest.mark.django_db
+def test_no_databases_given():
+    assert checks.check_column_types(databases=None) == []
+    assert checks.check_tables_are_strict(databases=None) == []
     assert checks.check_decimal_max_digits(databases=None) == []
 
 
@@ -78,6 +83,51 @@ def test_valid_column_types_are_ignored():
 
         with mock.patch.object(checks, "apps", registry):
             assert checks.check_column_types(databases=["default"]) == []
+
+
+@pytest.mark.django_db
+def test_all_project_tables_strict():
+    assert checks.check_tables_are_strict(databases=["default"]) == []
+
+
+@pytest.mark.django_db(transaction=True)
+def test_non_strict_table_reported():
+    table = Legacy._meta.db_table
+    with connection.cursor() as cursor:
+        cursor.execute(f'DROP TABLE "{table}"')
+        cursor.execute(
+            f'CREATE TABLE "{table}" ('
+            '"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, '
+            '"name" varchar(50) NOT NULL, '
+            '"amount" decimal NOT NULL)'
+        )
+
+    result = checks.check_tables_are_strict(databases=["default"])
+
+    assert len(result) == 1
+    error = result[0]
+    assert isinstance(error, Error)
+    assert error.id == "dss.E002"
+    assert error.msg == f"Table {table!r} of model test_project.Legacy is not STRICT."
+    assert error.obj is Legacy
+
+    call_command("convert_to_strict", no_input=True)
+
+    assert checks.check_tables_are_strict(databases=["default"]) == []
+
+
+@pytest.mark.django_db
+def test_missing_table_not_reported():
+    with isolate_apps("tests") as registry:
+
+        class Unmigrated(models.Model):
+            class Meta:
+                app_label = "tests"
+
+        with mock.patch.object(checks, "apps", registry):
+            result = checks.check_tables_are_strict(databases=["default"])
+
+    assert result == []
 
 
 def test_strict_models_skips_non_django_sqlite_strict_connections():

@@ -10,4 +10,5 @@ class DjangoSqliteStrictConfig(AppConfig):
 
     def ready(self) -> None:
         register(Tags.database)(checks.check_column_types)
+        register(Tags.database)(checks.check_tables_are_strict)
         register(Tags.database)(checks.check_decimal_max_digits)
