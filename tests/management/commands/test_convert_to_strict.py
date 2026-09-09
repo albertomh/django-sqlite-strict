@@ -15,19 +15,21 @@ if DJANGO_VERSION >= (5, 0):
 
 @pytest.mark.django_db(transaction=True)
 def test_convert_to_strict_rejects_non_sqlite_database():
-    with pytest.raises(CommandError, match="'other' is not a SQLite database"):
+    with pytest.raises(
+        CommandError, match="'other' is not a django_sqlite_strict database"
+    ):
         call_command("convert_to_strict", database="other", no_input=True)
 
 
 @pytest.mark.django_db(transaction=True)
 def test_convert_to_strict_is_idempotent(capsys):
     call_command("convert_to_strict")
-    assert non_strict_tables() == []
+    assert non_strict_tables(connection) == []
 
     call_command("convert_to_strict")
 
     assert "All tables are already STRICT." in capsys.readouterr().out
-    assert non_strict_tables() == []
+    assert non_strict_tables(connection) == []
 
 
 @pytest.mark.django_db(transaction=True)
@@ -48,7 +50,7 @@ def test_convert_to_strict_dry_run_does_not_modify_tables(non_strict_table, caps
 
     call_command("convert_to_strict", dry_run=True, no_input=True)
 
-    assert Author._meta.db_table in non_strict_tables()
+    assert Author._meta.db_table in non_strict_tables(connection)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -57,7 +59,7 @@ def test_convert_to_strict_dry_run_skips_unknown_tables(legacy_sql_table, capsys
 
     out = capsys.readouterr().out
     assert "Would skip legacy_sql (no managed Django model)" in out
-    assert non_strict_tables() == ["legacy_sql"]
+    assert non_strict_tables(connection) == ["legacy_sql"]
 
 
 @pytest.mark.django_db(transaction=True)
@@ -68,7 +70,7 @@ def test_convert_to_strict_prompts_for_confirmation(non_strict_table, monkeypatc
 
     call_command("convert_to_strict")
 
-    assert Author._meta.db_table in non_strict_tables()
+    assert Author._meta.db_table in non_strict_tables(connection)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -79,7 +81,7 @@ def test_convert_to_strict_proceeds_on_confirmation(non_strict_table, monkeypatc
 
     call_command("convert_to_strict")
 
-    assert non_strict_tables() == []
+    assert non_strict_tables(connection) == []
 
 
 @pytest.mark.django_db(transaction=True)
@@ -99,11 +101,11 @@ def test_convert_to_strict_rebuilds_legacy_tables():
             ["kept", "19.99"],
         )
 
-    assert non_strict_tables() == [table]
+    assert non_strict_tables(connection) == [table]
 
     call_command("convert_to_strict", no_input=True)
 
-    assert non_strict_tables() == []
+    assert non_strict_tables(connection) == []
 
     obj = Legacy.objects.get()
     assert (obj.name, obj.amount) == ("kept", Decimal("19.99"))
@@ -111,16 +113,30 @@ def test_convert_to_strict_rebuilds_legacy_tables():
 
 @pytest.mark.django_db(transaction=True)
 def test_convert_to_strict_skips_unknown_tables(legacy_sql_table, capsys):
-    assert sorted(non_strict_tables()) == ["legacy_sql"]
+    assert sorted(non_strict_tables(connection)) == ["legacy_sql"]
 
     call_command("convert_to_strict", no_input=True)
 
     assert "Skipped legacy_sql" in capsys.readouterr().out
-    assert non_strict_tables() == ["legacy_sql"]
+    assert non_strict_tables(connection) == ["legacy_sql"]
 
     with connection.cursor() as cursor:
         cursor.execute("SELECT value FROM legacy_sql")
         assert cursor.fetchall() == []
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_reports_unknown_tables_with_rebuild(
+    legacy_sql_table, non_strict_table, capsys
+):
+    non_strict_table(Author)
+
+    call_command("convert_to_strict", no_input=True)
+
+    out = capsys.readouterr().out
+    assert "1 table(s) will be skipped because they are not managed by Django." in out
+    assert f"Rebuilding {Author._meta.db_table}" in out
+    assert non_strict_tables(connection) == ["legacy_sql"]
 
 
 @pytest.mark.django_db(transaction=True)

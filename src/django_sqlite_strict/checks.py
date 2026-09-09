@@ -20,6 +20,9 @@ def _strict_models(
         if not isinstance(connection, DatabaseWrapper):
             continue
         for model in apps.get_models(include_auto_created=True):
+            # exempt tables are allowed to be non-STRICT, so don't check column types
+            if model._meta.db_table in connection.strict_exempt_tables:
+                continue
             # skip models we don't create tables for (proxy, swapped, unmanaged)
             if not router.allow_migrate_model(alias, model) or not model._meta.managed:
                 continue

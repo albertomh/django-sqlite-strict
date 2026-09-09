@@ -6,11 +6,12 @@ from typing import Any
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS, DatabaseError, connections
-from django.db.backends.sqlite3.base import DatabaseWrapper as SQLiteDatabaseWrapper
 from django.db.migrations.recorder import MigrationRecorder
+from django.db.models import Model
 
 from django_sqlite_strict.base import (
     DatabaseSchemaEditor,
+    DatabaseWrapper,
 )
 
 
@@ -43,8 +44,10 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         connection = connections[options["database"]]
 
-        if not isinstance(connection, SQLiteDatabaseWrapper):
-            raise CommandError(f"{options['database']!r} is not a SQLite database.")
+        if connection.settings_dict["ENGINE"] != "django_sqlite_strict":
+            raise CommandError(
+                f"{options['database']!r} is not a django_sqlite_strict database."
+            )
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -59,7 +62,11 @@ class Command(BaseCommand):
             )
             non_strict_tables = {row[0] for row in cursor.fetchall()}
 
-        if not non_strict_tables:
+        # exempt tables are meant to stay non-STRICT, so don't rebuild them
+        exempted = sorted(non_strict_tables.intersection(connection.strict_exempt_tables))
+        non_strict_tables -= connection.strict_exempt_tables
+
+        if not non_strict_tables and not exempted:
             self.stdout.write(self.style.SUCCESS("All tables are already STRICT."))
             return
 
@@ -81,12 +88,14 @@ class Command(BaseCommand):
         skipped = sorted(non_strict_tables - models_by_table.keys())
 
         if options["dry_run"]:
-            for model in rebuild:
-                self.stdout.write(f"Would rebuild {model._meta.db_table}")
-            for table in skipped:
-                self.stdout.write(
-                    self.style.WARNING(f"Would skip {table} (no managed Django model)")
-                )
+            self._write_dry_run(rebuild, skipped, exempted)
+            return
+
+        if not rebuild:
+            self._write_skipped(skipped, exempted)
+            self.stdout.write(
+                self.style.SUCCESS("Successfully rebuilt 0 table(s) as STRICT.")
+            )
             return
 
         self.stdout.write(
@@ -103,11 +112,56 @@ class Command(BaseCommand):
                 )
             )
 
-        if not options["no_input"]:
-            if input("Continue? [y/N] ").strip().lower() not in {"y", "yes"}:
-                self.stdout.write("Aborted.")
-                return
+        if not self._confirmed(options):
+            return
 
+        self._rebuild_tables(connection, rebuild)
+        self._write_skipped(skipped, exempted)
+
+        self.stdout.write(
+            self.style.SUCCESS(f"Successfully rebuilt {len(rebuild)} table(s) as STRICT.")
+        )
+
+    def _write_dry_run(
+        self,
+        rebuild: list[type[Model]],
+        skipped: list[str],
+        exempted: list[str],
+    ) -> None:
+        for model in rebuild:
+            self.stdout.write(f"Would rebuild {model._meta.db_table}")
+        for table in skipped:
+            self.stdout.write(
+                self.style.WARNING(f"Would skip {table} (no managed Django model)")
+            )
+        for table in exempted:
+            self.stdout.write(
+                self.style.WARNING(f"Would skip {table} (strict_exempt_tables)")
+            )
+
+    def _write_skipped(self, skipped: list[str], exempted: list[str]) -> None:
+        for table in skipped:
+            self.stdout.write(
+                self.style.WARNING(f"Skipped {table}: no managed Django model.")
+            )
+        for table in exempted:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Skipped {table}: exempted via 'strict_exempt_tables'."
+                )
+            )
+
+    def _confirmed(self, options: dict[str, Any]) -> bool:
+        if options["no_input"]:
+            return True
+        if input("Continue? [y/N] ").strip().lower() in {"y", "yes"}:
+            return True
+        self.stdout.write("Aborted.")
+        return False
+
+    def _rebuild_tables(
+        self, connection: DatabaseWrapper, rebuild: list[type[Model]]
+    ) -> None:
         for model in rebuild:
             table = model._meta.db_table
             self.stdout.write(f"Rebuilding {table} ... ", ending="")
@@ -120,12 +174,3 @@ class Command(BaseCommand):
                 raise
 
             self.stdout.write(self.style.SUCCESS("OK"))
-
-        for table in skipped:
-            self.stdout.write(
-                self.style.WARNING(f"Skipped {table}: no managed Django model.")
-            )
-
-        self.stdout.write(
-            self.style.SUCCESS(f"Successfully rebuilt {len(rebuild)} table(s) as STRICT.")
-        )
