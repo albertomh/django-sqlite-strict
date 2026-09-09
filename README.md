@@ -93,6 +93,24 @@ remains unchanged.
   Rebuilds existing non-STRICT tables as STRICT ones. Pass `--dry-run` to preview the effect of this
   command, and `--no-input` for use in CI pipelines.
 
+### Escape hatches
+
+- Setting the `strict_exempt_tables` option (see below) allows specified tables to be created with the
+  stock non-STRICT template. Use it for third-party apps whose fields can't be re-mapped or subclassed.
+  Exempt tables are skipped by the checks & the `convert_to_strict` management command.
+
+```python
+DATABASES = {
+    "default": {
+        "ENGINE": "django_sqlite_strict",
+        "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {
+            "strict_exempt_tables": ["some_third_party_table"],
+        },
+    }
+}
+```
+
 ## Develop
 
 ### Development prerequisites

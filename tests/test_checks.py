@@ -8,6 +8,7 @@ from django.db.backends.base.base import BaseDatabaseWrapper
 from django.test.utils import isolate_apps
 
 from django_sqlite_strict import checks
+from django_sqlite_strict.base import DatabaseWrapper
 from tests.test_project.models import Legacy
 
 
@@ -215,3 +216,25 @@ def test_wide_decimal_field_warned():
         "but SQLite STRICT stores decimals as REAL, which maxes out "
         "at 15 significant digits."
     )
+
+
+def test_exempt_tables_skipped():
+    with isolate_apps("tests") as registry:
+
+        class Printer(models.Model):
+            mac = MacAddressField()
+            ink_ml = models.DecimalField(max_digits=20, decimal_places=4)
+
+            class Meta:
+                app_label = "tests"
+
+        mock_connection = mock.Mock(spec=DatabaseWrapper)
+        mock_connection.strict_exempt_tables = frozenset({Printer._meta.db_table})
+        mock_connections = {"default": mock_connection}
+
+        with (
+            mock.patch.object(checks, "apps", registry),
+            mock.patch.object(checks, "connections", mock_connections),
+        ):
+            assert checks.check_column_types(databases=["default"]) == []
+            assert checks.check_decimal_max_digits(databases=["default"]) == []
