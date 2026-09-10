@@ -73,6 +73,28 @@ remains unchanged.
 > Applications requiring exact decimal arithmetic should consider storing integer minor units or
 > using a database with native DECIMAL support.
 
+### StrictDecimalField
+
+`django_sqlite_strict.fields.StrictDecimalField` is a `DecimalField` subclass that stores exact
+integer minor units in an `INTEGER` column instead of storing decimals as `REAL`. For example,
+`Decimal("19.99")` with `decimal_places=2` is stored as `1999` and read back as a `Decimal`.
+
+```python
+from django.db import models
+
+from django_sqlite_strict.fields import StrictDecimalField
+
+
+class Order(models.Model):
+    total_price = StrictDecimalField(max_digits=18, decimal_places=2)
+```
+
+- Round-trips are exact for `max_digits <= 18`. The `dss.E003` check guards against wider fields
+  because they could overflow SQLite's 8-byte INTEGER.
+- Values with more decimal places than the field declares raise `ValueError` on save.
+- Lookups and ordering work normally because comparisons are scaled to the stored integer value.
+- SQL-side arithmetic & raw SQL use the stored minor units, ie. `1999` rather than `19.99`.
+
 ### System checks
 
 `django-sqlite-strict` will register the following [Django system checks](https://docs.djangoproject.com/en/stable/topics/checks/):
@@ -86,6 +108,9 @@ remains unchanged.
 - [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L104)  
   Raises a warning if a `DecimalField` has `max_digits` set to a value higher than the
   '15 significant digits' threshold up to which SQLite's REAL stores decimals.
+- [`dss.E003`](./src/django_sqlite_strict/fields.py#L30)  
+  Raises an error if a `StrictDecimalField` has `max_digits > 18`, meaning its integer minor units could
+  overflow SQLite's 8-byte INTEGER. Runs on every `./manage.py check`.
 
 ### Management commands
 

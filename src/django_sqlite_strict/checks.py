@@ -126,7 +126,8 @@ def check_decimal_max_digits(
                 )
                 hint = (
                     f"Keep max_digits <= {REAL_EXACT_DIGITS}, store integer minor units "
-                    "in a BigIntegerField, or switch to a database with DECIMAL support."
+                    "in a BigIntegerField, use django_sqlite_strict.fields."
+                    "StrictDecimalField, or switch to a database with DECIMAL support."
                 )
                 warnings.append(
                     Warning(

@@ -2,6 +2,8 @@ from django import VERSION as DJANGO_VERSION
 from django.db import models
 from django.db.models.functions import ExtractYear
 
+from django_sqlite_strict.fields import StrictDecimalField
+
 
 class KitchenSink(models.Model):
     """One column per built-in field type with a non-STRICT default decltype."""
@@ -37,6 +39,12 @@ class Legacy(models.Model):
 
     name = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Order(models.Model):
+    """Exercises StrictDecimalField's integer minor-unit storage."""
+
+    total_price = StrictDecimalField(max_digits=18, decimal_places=2, null=True)
 
 
 class Indexed(models.Model):
