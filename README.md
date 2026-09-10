@@ -22,6 +22,9 @@ STRICT tables.
 - Django >= 4.2
 - SQLite >= 3.37.0
 
+Supported Django versions depend on the Python version in use; see [`pyproject.toml`](./pyproject.toml)
+for the exact dependency constraints.
+
 ## Install
 
 1. Add as a dependency:
@@ -30,8 +33,7 @@ STRICT tables.
     uv add django-sqlite-strict
     ```
 
-1. In `settings.py`, add to `INSTALLED_APPS` after any first-party apps and before
-`django.contrib` packages.
+1. In `settings.py`, add to `INSTALLED_APPS`.
 
     ```python
     INSTALLED_APPS = [
@@ -65,27 +67,54 @@ stock SQLite backend. For example:
 - `BooleanField` as `INTEGER` instead of `BOOL`  
 - `DecimalField` as `REAL` instead of `DECIMAL`
 
-These changes affect only the SQL column types used in migrations, Django's Python field API
-remains unchanged.
+These field remappings affect only the SQL column types used in migrations. Django's Python field
+API remains unchanged.
 
-> [!WARNING]
-> Because of the above `STRICT`-compliant field type mappings, `DecimalField` is stored as `REAL`.  
-> Applications requiring exact decimal arithmetic should consider storing integer minor units or
-> using a database with native DECIMAL support.
+> [!NOTE]
+> Plain Django `DecimalField` is stored as `REAL` so it remains compatible with SQLite `STRICT`
+> column types. Values wider than SQLite's exact REAL precision may lose precision. For exact
+> decimal storage on SQLite, use `django_sqlite_strict.fields.StrictDecimalField`, which
+> stores scaled integer minor units.
+
+### StrictDecimalField
+
+`django_sqlite_strict.fields.StrictDecimalField` is a `DecimalField` subclass that stores exact
+integer minor units in an `INTEGER` column instead of storing decimals as `REAL`. For example,
+`Decimal("19.99")` with `decimal_places=2` is stored as `1999` and read back as a `Decimal`.
+
+```python
+from django.db import models
+
+from django_sqlite_strict.fields import StrictDecimalField
+
+
+class Order(models.Model):
+    total_price = StrictDecimalField(max_digits=18, decimal_places=2)
+```
+
+- Round-trips are exact for `max_digits <= 18`. The `dss.E003` check guards against wider fields
+  because they could overflow SQLite's 8-byte INTEGER.
+- Values with more decimal places than the field declares raise `ValueError` on save.
+- Lookups and ordering work normally because comparisons are scaled to the stored integer value.
+- SQL-side arithmetic, including `F()` expressions, and raw SQL use the stored minor units,
+  ie. `1999` rather than `19.99`.
 
 ### System checks
 
 `django-sqlite-strict` will register the following [Django system checks](https://docs.djangoproject.com/en/stable/topics/checks/):
 
-- [`check_column_types`](./src/django_sqlite_strict/checks.py#L29)  
+- [`check_column_types`](./src/django_sqlite_strict/checks.py#L32)  
   Raises an error if any entry in the `DATABASES` setting has a column of a type that is not
   accepted by STRICT tables.
-- [`check_tables_are_strict`](./src/django_sqlite_strict/checks.py#L61)  
+- [`check_tables_are_strict`](./src/django_sqlite_strict/checks.py#L64)  
   Raises an error if a model's table already exists in the database but is not STRICT,
   ie. the `ENGINE` was switched without running `convert_to_strict`.
-- [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L104)  
+- [`check_decimal_max_digits`](./src/django_sqlite_strict/checks.py#L107)  
   Raises a warning if a `DecimalField` has `max_digits` set to a value higher than the
   '15 significant digits' threshold up to which SQLite's REAL stores decimals.
+- [`dss.E003`](./src/django_sqlite_strict/fields.py#L26)  
+  Raises an error if a `StrictDecimalField` has `max_digits > 18`, meaning its integer minor units could
+  overflow SQLite's 8-byte INTEGER. Runs on every `./manage.py check`.
 
 ### Management commands
 
@@ -95,9 +124,11 @@ remains unchanged.
 
 ### Escape hatches
 
-- Setting the `strict_exempt_tables` option (see below) allows specified tables to be created with the
-  stock non-STRICT template. Use it for third-party apps whose fields can't be re-mapped or subclassed.
-  Exempt tables are skipped by the checks & the `convert_to_strict` management command.
+When you own the model, prefer mapping unsupported field types to STRICT-compatible storage, for
+example use `StrictDecimalField` for exact decimals.  
+For third-party app models, setting the `strict_exempt_tables` option allows specified tables to
+be created with Django's stock non-STRICT template. Exempt tables are skipped by the checks & the
+`convert_to_strict` management command.
 
 ```python
 DATABASES = {
