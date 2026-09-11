@@ -6,6 +6,7 @@ from django import VERSION as DJANGO_VERSION
 from django.core.management import CommandError, call_command
 from django.db import DatabaseError, connection, utils
 
+from django_sqlite_strict.management.commands.convert_to_strict import Command
 from tests.test_project.models import Author, Book, Indexed, Legacy, Tag
 from tests.utils import non_strict_tables
 
@@ -19,6 +20,29 @@ def test_convert_to_strict_rejects_non_sqlite_database():
         CommandError, match="'other' is not a django_sqlite_strict database"
     ):
         call_command("convert_to_strict", database="other", no_input=True)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_convert_to_strict_skips_preflight_system_checks(monkeypatch):
+    def fail_check(self, **kwargs):
+        raise AssertionError
+
+    monkeypatch.setattr(
+        "django_sqlite_strict.management.commands.convert_to_strict.Command.check",
+        fail_check,
+    )
+
+    Command().execute(
+        database="default",
+        dry_run=False,
+        force_color=False,
+        no_color=False,
+        no_input=True,
+        skip_checks=False,
+        stderr=None,
+        stdout=None,
+        verbosity=1,
+    )
 
 
 @pytest.mark.django_db(transaction=True)

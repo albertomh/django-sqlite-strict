@@ -1,7 +1,7 @@
 # ruff: noqa: TRY003
 
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, ClassVar
 
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
@@ -16,6 +16,7 @@ from django_sqlite_strict.base import (
 
 
 class Command(BaseCommand):
+    requires_system_checks: ClassVar[list[str]] = []
     help = (
         "Rebuild every non-STRICT managed table as a STRICT table. "
         "The command uses Django's SQLite table-rebuild implementation, "
