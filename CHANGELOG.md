@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/albertomh/django-sqlite-strict/compare/1.0.0...1.1.0) (2026-09-11)
+
+
+### Features
+
+* Add strict_exempt_tables option as an escape hatch ([#48](https://github.com/albertomh/django-sqlite-strict/issues/48)) ([6d0fd47](https://github.com/albertomh/django-sqlite-strict/commit/6d0fd471d604b0fe41060d70c80be8b1905459ec))
+* Add StrictDecimalField for exact decimal storage ([#49](https://github.com/albertomh/django-sqlite-strict/issues/49)) ([224b62b](https://github.com/albertomh/django-sqlite-strict/commit/224b62bb6b4e3aae3f9d8dee7235aa623b7d3326))
+* Check that existing model tables are STRICT (dss.E002) ([#46](https://github.com/albertomh/django-sqlite-strict/issues/46)) ([8c03b3e](https://github.com/albertomh/django-sqlite-strict/commit/8c03b3eb2c494a2058f9f684167651811115ee52))
+
+
+### Bug Fixes
+
+* Let convert_to_strict run before strict checks ([#50](https://github.com/albertomh/django-sqlite-strict/issues/50)) ([a641cf5](https://github.com/albertomh/django-sqlite-strict/commit/a641cf5c25c0aa99f74aea83012f0e883ebcb3f7))
+
 ## [1.0.0](https://github.com/albertomh/django-sqlite-strict/compare/0.3.0...1.0.0) (2026-08-24)
 
 
